@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Resetti GUI
+Exec=<insert path to binary here>
+Terminal=false
+Type=Application
