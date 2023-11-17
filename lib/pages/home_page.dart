@@ -56,6 +56,9 @@ class _HomePageState extends State<HomePage> {
               (data) => setState(
                 () {
                   _consoleOut += data.strip();
+                  if (data.strip().toLowerCase().contains("done")) {
+                    _resettiPid = -1;
+                  }
                 },
               ),
             );
@@ -487,55 +490,22 @@ class _HomePageState extends State<HomePage> {
                       'kill',
                       ['$_resettiPid'],
                     );
-                  }
-                  _startProc(
-                    conf.resettiPath,
-                    [conf.resettiProfile],
-                    savePid: true,
-                  );
-                },
-                child: const Text(
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13,
-                  ),
-                  "Start resetti",
-                ),
-              ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.00972),
-              ElevatedButton(
-                style: ButtonStyle(
-                  fixedSize: MaterialStateProperty.all<Size>(
-                    const Size.fromWidth(175),
-                  ),
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
-                  ),
-                  backgroundColor: MaterialStateProperty.all<Color>(
-                    const Color.fromRGBO(95, 95, 95, 1),
-                  ),
-                  foregroundColor: MaterialStateProperty.all<Color>(
-                    const Color.fromRGBO(201, 201, 201, 1),
-                  ),
-                ),
-                onPressed: () {
-                  if (_resettiPid != -1) {
-                    Process.runSync(
-                      'kill',
-                      ['$_resettiPid'],
+                  } else {
+                    _startProc(
+                      conf.resettiPath,
+                      [conf.resettiProfile],
+                      savePid: true,
                     );
                   }
                 },
-                child: const Text(
+                child: Text(
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
                   ),
-                  "Kill resetti",
+                  (_resettiPid == -1) ? "Start resetti" : "Kill resetti",
                 ),
-              )
+              ),
             ],
           ),
           SizedBox(width: MediaQuery.of(context).size.width * 0.00234),
