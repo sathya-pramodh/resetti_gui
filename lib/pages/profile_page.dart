@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:resetti_gui/components/file_picker.dart';
 import 'package:resetti_gui/components/row_with_text.dart';
 import 'package:resetti_gui/components/slider_with_text.dart';
+import 'package:resetti_gui/components/text_field.dart';
 import 'package:resetti_gui/conf/conf.dart';
 import 'package:resetti_gui/styles/text_style.dart';
 import 'package:resetti_gui/styles/button_style.dart';
@@ -20,18 +21,22 @@ class _ProfilePageState extends State<ProfilePage> {
   List<String> _resettiProfiles = [];
 
   String _resettiProfileSelected = "";
-  String _resettiPathPicked = "None";
+  String _resettiArgs = "";
+  String _resettiPathPicked = "";
   String _benchPathPicked = "";
-  String _multimcPathPicked = "None";
+  String _multimcPathPicked = "";
+  String _benchArgs = "";
   bool _validProfile = true;
   int _benchCount = 0;
 
   void confUpdate() {
     widget.conf.write('resetti_profile', _resettiProfileSelected);
     widget.conf.write('resetti_path', _resettiPathPicked);
+    widget.conf.write('resetti_args', _resettiArgs);
     widget.conf.write('multimc_path', _multimcPathPicked);
     widget.conf.write('bench_path', _benchPathPicked);
     widget.conf.write('bench_count', _benchCount);
+    widget.conf.write('bench_args', _benchArgs);
   }
 
   @override
@@ -71,9 +76,11 @@ class _ProfilePageState extends State<ProfilePage> {
       _resettiProfileSelected = widget.conf.resettiProfile;
     }
     _resettiPathPicked = widget.conf.resettiPath;
+    _resettiArgs = widget.conf.resettiArgs;
     _multimcPathPicked = widget.conf.multimcPath;
     _benchPathPicked = widget.conf.benchPath;
     _benchCount = widget.conf.benchCount;
+    _benchArgs = widget.conf.benchArgs;
   }
 
   @override
@@ -102,6 +109,22 @@ class _ProfilePageState extends State<ProfilePage> {
         SizedBox(height: MediaQuery.of(context).size.height * 0.01),
         rowWithText(
           context,
+          "Resetti Args: ",
+          [
+            textField(
+              _resettiArgs,
+              (result) => setState(
+                () {
+                  _resettiArgs = result;
+                  confUpdate();
+                },
+              ),
+            )
+          ],
+        ),
+        SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+        rowWithText(
+          context,
           "Bench Path: ",
           filePicker(
             context,
@@ -115,6 +138,22 @@ class _ProfilePageState extends State<ProfilePage> {
               },
             ),
           ),
+        ),
+        SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+        rowWithText(
+          context,
+          "Bench Args: ",
+          [
+            textField(
+              _benchArgs,
+              (result) => setState(
+                () {
+                  _benchArgs = result;
+                  confUpdate();
+                },
+              ),
+            )
+          ],
         ),
         SizedBox(height: MediaQuery.of(context).size.height * 0.01),
         rowWithText(

@@ -153,33 +153,31 @@ class _HomePageState extends State<HomePage> {
         },
       );
       List<String> instanceNames = [];
-      workingDirs.forEach(
-        (dir) {
-          dir = dir.substring(0, dir.length - 11);
-          String instCfg = File('$dir/instance.cfg').readAsStringSync();
-          int idx = instCfg.split('=').indexWhere(
-            (el) {
-              return el == '[]\nname';
-            },
-          );
-          String instName = instCfg
-              .split('=')[idx + 1]
-              .split('')
-              .reversed
-              .join()
-              .substring(6)
-              .split('')
-              .reversed
-              .join();
-          instanceNames.add(instName);
-          _startProc(
-            'echo',
-            [
-              'Detected "$instName" and saved to list of instances.',
-            ],
-          );
-        },
-      );
+      for (String dir in workingDirs) {
+        dir = dir.substring(0, dir.length - 11);
+        String instCfg = File('$dir/instance.cfg').readAsStringSync();
+        int idx = instCfg.split('=').indexWhere(
+          (el) {
+            return el == '[]\nname';
+          },
+        );
+        String instName = instCfg
+            .split('=')[idx + 1]
+            .split('')
+            .reversed
+            .join()
+            .substring(6)
+            .split('')
+            .reversed
+            .join();
+        instanceNames.add(instName);
+        _startProc(
+          'echo',
+          [
+            'Detected "$instName" and saved to list of instances.',
+          ],
+        );
+      }
       conf.write(
         'instances',
         instanceNames,
@@ -330,21 +328,19 @@ class _HomePageState extends State<HomePage> {
                           ],
                         );
                       } else {
-                        conf.instances.forEach(
-                          (instance) {
-                            _startProc(
-                              conf.multimcPath,
-                              [
-                                '-l',
-                                '$instance',
-                              ],
-                            );
-                            _startProc(
-                              'echo',
-                              ['Starting Instance "$instance".'],
-                            );
-                          },
-                        );
+                        for (String instance in conf.instances) {
+                          _startProc(
+                            conf.multimcPath,
+                            [
+                              '-l',
+                              instance,
+                            ],
+                          );
+                          _startProc(
+                            'echo',
+                            ['Starting Instance "$instance".'],
+                          );
+                        }
                       }
                       break;
 
@@ -368,9 +364,10 @@ class _HomePageState extends State<HomePage> {
                         _startProc(
                           conf.benchPath,
                           [
-                            '-reset-count',
-                            '${conf.benchCount}',
-                          ],
+                                '-reset-count',
+                                '${conf.benchCount}',
+                              ] +
+                              conf.benchArgs.split(" "),
                         );
                       }
                   }
@@ -399,30 +396,25 @@ class _HomePageState extends State<HomePage> {
                         );
                         break;
                       }
-                      conf.instanceDirs.forEach(
-                        (dir) {
-                          ProcessResult process = Process.runSync(
-                            'ls',
-                            ["$dir/saves/"],
-                          );
-                          if (process.stderr != "") {
-                            _startProc('echo', ['Error: $process.stderr']);
-                            return;
+                      for (String dir in conf.instanceDirs) {
+                        ProcessResult process = Process.runSync(
+                          'ls',
+                          ["$dir/saves/"],
+                        );
+                        if (process.stderr != "") {
+                          _startProc('echo', ['Error: $process.stderr']);
+                          return;
+                        }
+                        List<String> result = process.stdout.split('\n');
+                        for (String world in result) {
+                          if (world.contains('Random') ||
+                              world.contains('Set')) {
+                            Directory("$dir/saves/$world")
+                                .deleteSync(recursive: true);
                           }
-                          List<String> result = process.stdout.split('\n');
-                          result.forEach(
-                            (world) {
-                              if (world.contains('Random') ||
-                                  world.contains('Set')) {
-                                Directory("$dir/saves/$world")
-                                    .deleteSync(recursive: true);
-                              }
-                            },
-                          );
-                          _startProc('echo', ['Cleared worlds in $dir/saves']);
-                        },
-                      );
-                      break;
+                        }
+                        _startProc('echo', ['Cleared worlds in $dir/saves']);
+                      }
                   }
                 },
                 itemBuilder: (context) {
@@ -493,7 +485,10 @@ class _HomePageState extends State<HomePage> {
                   } else {
                     _startProc(
                       conf.resettiPath,
-                      [conf.resettiProfile],
+                      [
+                            conf.resettiProfile,
+                          ] +
+                          conf.resettiArgs.split(" "),
                       savePid: true,
                     );
                   }
